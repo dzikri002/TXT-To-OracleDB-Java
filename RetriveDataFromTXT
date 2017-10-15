@@ -1,0 +1,97 @@
+package com.jayadav.test;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
+
+import org.apache.tomcat.dbcp.dbcp.BasicDataSource;
+
+
+
+public class RetriveDataFromTXT {
+	public static void main(String[] args) {
+		// StringTokenizer stringTokenizert;
+		String sno=null;
+		String customer_name=null;
+		String purchage_date=null;
+		String amount=null;
+		String line = null;
+		long amount_gst = 0;
+		long net_amount = 0;
+		BufferedReader bufferedReader;
+		Connection con;
+		PreparedStatement ps = null;
+
+		BasicDataSource bds = new BasicDataSource();
+		bds.setDriverClassName("oracle.jdbc.OracleDriver");
+		bds.setUrl("jdbc:oracle:thin:@localhost:1521:xe");
+		bds.setUsername("System");
+		bds.setPassword("tiger");
+		try {
+			con = bds.getConnection();
+
+			bufferedReader = new BufferedReader(new FileReader("C:\\Users\\SUDHAKAR YADAV\\Desktop\\sales.txt"));
+
+			while ((line = bufferedReader.readLine()) !=null && line.matches(".*[	].*")) {
+				if(line != null && !line.equals(""))
+				{
+				// both u can use
+				/*
+				 * stringTokenizert = new StringTokenizer(line, " ");
+				 * sno=stringTokenizert.nextToken(); customer_name=stringTokenizert.nextToken();
+				 * purchage_date=stringTokenizert.nextToken();
+				 * amount=stringTokenizert.nextToken();
+				 */
+
+				String tmp[] = line.split("	");
+				for(int i=0;i<tmp.length;i++)
+				{
+				sno = tmp[0];
+				customer_name = tmp[1];
+				purchage_date = tmp[2];
+				amount= tmp[3];
+				}
+                
+				//SimpleDateFormat formatter = new SimpleDateFormat("dd-MMM-yyyy");
+				//Date date = (Date) formatter.parse(purchage_date);
+				
+				Long amount1 = Long.parseLong(amount.trim());
+				
+				amount_gst = (amount1*14)/100;
+				net_amount = amount1+amount_gst;
+				int sno1=Integer.parseInt(sno);
+
+				System.out.println(sno + "\t" + customer_name + "\t" + purchage_date + "\t" + amount);
+				String sql = "INSERT INTO smilydata (sno,customer_name,purchage_date,amount,amount_gst,net_amount) values ('" + sno1
+						+ "','" + customer_name + "','" + purchage_date + "','" + amount1 + "','" + amount_gst + "','"
+						+ net_amount + "')";
+
+				ps = con.prepareStatement(sql);
+				ps.executeUpdate();
+				
+				}//if
+			} // while
+
+			bufferedReader.close();
+			ps.close();
+		} catch (NumberFormatException e) {
+			e.printStackTrace();
+		}
+		catch (NullPointerException e) {
+			e.printStackTrace();
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+
+	}
+
+}
